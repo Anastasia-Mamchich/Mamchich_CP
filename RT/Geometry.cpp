@@ -18,10 +18,57 @@ bool Plane::Intersect(const Ray& ray, float t_min, float t_max, SurfHit& surf) c
 
 	return false;
 }
+
+
+
+bool Triangle::Intersect(const Ray& ray, float tmin, float tmax, SurfHit& surf) const
+{
+	//Алгоритм Моллера-трумбора
+	float3 E1 = b - a; // вектор одной стороны
+	float3 E2 = c - a; // вектор другой стороны
+	float3 T = ray.o - a; // a - точка, которую мы перенесли в новый центр координат (барицентрические координаты)
+	float3 D = ray.d;// вектор скорости
+	//Треугольник определяется тремя вершинами – A, B, C.
+	//	Нормаль к треугольнику может быть расчитана как
+	//	векторное произведение двух ребер треугольника :
+	float3 P = cross(D, E2);
+	float3 Q = cross(T, E1);
+	float det = dot(E1, P); // время
+
+	if (det < tmin && det > tmax) {
+		return false;
+	}
+
+	float invDet = 1 / det;
+	// барицентрические координаты u и v должны удовлетворять условиям
+	//Если u >= 0, v >=0 и u + v <= 1, то точка находится внутри или на стороне треугольника и пересечение найдено.
+	// расчитываем три параметра из матрицы
+	float u = dot(T, P) * invDet;
+	if (u < 0 || u > 1) {
+		return false;
+	}
+	float v = dot(ray.d, Q) * invDet;
+	if (v < 0 || u + v > 1) {
+		return false;
+	}
+	surf.t = dot(E2, Q) * invDet;
+
+	if (surf.t > tmin && surf.t < tmax) {//проверка границ и присвоение модифицированных значений 
+		surf.hit = true;
+		surf.hitPoint = float3(surf.t, u, v);  // находим точку пересечения
+		surf.normal = cross((b - a), (c - a)); // находим нормаль через перемножение векторов плоскости
+		surf.m_ptr = m_ptr;
+		return true;
+	}
+	return false;
+}
+
+
 //Для пересечения со сферой подставляем луч в уравнение сферы и решаем получившееся квадратное уравнение
 //Решения этого уравнения - точки пересечения луча со сферой
 bool Sphere::Intersect(const Ray& ray, float t_min, float t_max, SurfHit& surf) const
 {
+	//Определяются центром и радиусом.
 
 	float3 k = ray.o - center;   
 	// расчет коэффициентов для уравнения
@@ -91,45 +138,10 @@ bool Parallel::Intersect(const Ray& ray, float tmin, float tmax, SurfHit& surf) 
 	return false;
 }
 
-bool Triangle::Intersect(const Ray& ray, float tmin, float tmax, SurfHit& surf) const
-{
-	float3 E1 = b - a; // вектор одной стороны
-	float3 E2 = c - a; // вектор другой стороны
-	float3 T = ray.o - a; // a - точка, которую мы перенесли в новый центр координат (барицентрические координаты)
-	float3 D = ray.d;// вектор скорости
-	float3 P = cross(D, E2);
-	float3 Q = cross(T, E1);
-	float det = dot(E1, P); // время
-
-	if (det < tmin && det > tmax) {
-		return false;
-	}
-
-	float invDet = 1 / det;
-	// барицентрические координаты u и v должны удовлетворять условиям (оба больше 0, но сумма меньше 1)
-  // расчитываем три параметра из матрицы
-	float u = dot(T, P) * invDet;
-	if (u < 0 || u > 1) {
-		return false;
-	}
-	float v = dot(ray.d, Q) * invDet;
-	if (v < 0 || u + v > 1) {
-		return false;
-	}
-
-	surf.t = dot(E2, Q) * invDet;
-	if (surf.t > tmin && surf.t < tmax) {//проверка границ и присвоение модифицированных значений 
-		surf.hit = true;
-		surf.hitPoint = float3(surf.t, u, v);  // находим точку пересечения
-		surf.normal = cross((b - a), (c - a)); // находим нормаль через перемножение векторов плоскости
-		surf.m_ptr = m_ptr;
-		return true;
-	}
-	return false;
-}
 
 bool Square::Intersect(const Ray& ray, float tmin, float tmax, SurfHit& surf) const
 {
+	//Если четырехугольник небольшой, его можно аппроксимировать двумя треугольниками.
 
 	float3 d = float3(a.x + c.x - b.x, a.y + c.y - b.y, a.z + a.z - b.z); // четвертая точка квадрата
 
@@ -143,44 +155,6 @@ bool Square::Intersect(const Ray& ray, float tmin, float tmax, SurfHit& surf) co
 	if (Triangle(a, d, c, new IdealMirror(float3(0.0f, 1.0f, 127 / float(255)))).Intersect(ray, tmin, tmax, surf))
 		return true;
 
-
 	return false;
 
-	/*
-	//return false;
-	float3 p1;//вершина квадрата (одна из)
-	float3 n;//нормаль к квадрату
-	float3 e1;//ширина НО вектором
-	float3 e2;//высота (аналогично)
-	p1 = a;
-	e1 = b - a;
-	e2 = c - a;
-	n = cross(e1, e2);
-	float t;
-	t = dot((p1 - ray.o), n) / dot(ray.d, n);
-	if (t >= 0)
-	{
-		float3 intersect_point;
-		intersect_point = (ray.o + ray.d);
-		float3 v;
-		v = intersect_point - p1;
-		float width, height;
-		width = length(e1);
-		height = length(e2);
-		float proj1, proj2;
-		proj1 = dot(v, e1) / width;
-		proj2 = dot(v, e2) / height;
-		if ((proj1 < width && proj1>0) && (proj2 < height && proj2>0))
-		{
-			surf.hit = true;
-			surf.hitPoint = intersect_point;
-			surf.m_ptr = m_ptr;
-			surf.t = length(ray.o - intersect_point);
-			surf.normal = n;
-
-			return true;
-		}
-		else return false;
-	}
-	else { return false; }*/
 }

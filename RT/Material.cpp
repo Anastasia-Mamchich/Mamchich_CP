@@ -16,6 +16,10 @@ SurfHit& SurfHit::operator= (const SurfHit& rhs)
 
 float3 reflect(const float3& v, const float3& normal)
 {
+    // Если поверхность обладает отражающими свойствами, то
+    // строится вторичный луч отражения. Направление луча
+    // определяется по закону отражения(геометрическая оптика) :
+    // i – 2 · n ·(n · i)
     return v - 2 * dot(v, normal) * normal;
 }
 
@@ -25,10 +29,9 @@ bool IdealMirror::Scatter(const Ray& ray_in, const SurfHit& surf, float3& attenu
     float3 reflection_dir = reflect(normalize(ray_in.d), surf.normal);
 
     ray_out = Ray(surf.hitPoint + surf.normal * 1e-5, reflection_dir);
-
+    // сместить исходную точку, чтобы избежать перекрытия самим объектом
     attenuation = color;
-
-    return (dot(ray_out.d, surf.normal) > 0);
+    return (dot(ray_out.d, surf.normal) > 0);// проверяется косинус больше нуля
 }
 
 
@@ -37,9 +40,15 @@ bool Diffuse::Scatter(const Ray& ray_in, const SurfHit& surf, float3& attenuatio
  
 
     float kd = dot(normalize(ray_out.d), normalize(surf.normal));
+    // высчитывается косинус через единичные вектора 
+  // Можно просто посмотреть на угол между нормальным вектором в этой точке и вектором, описывающим направление света. 
+  // Чем меньше угол, тем лучше освещена поверхность. Чтобы считать было ещё удобнее, можно просто взять скалярное 
+  // произвдение между вектором нормали и вектором освещения. Напоминаю, что скалярное произвдение между двумя векторами 
+  // a и b равно произведению норм векторов на косинус угла между векторами: a*b = |a| |b| cos(alpha(a,b)). 
+  // Если взять векторы единичной длины, то простейшее скалярное произведение даст нам интенсивность освещения поверхности.
 
-
-    attenuation = color * kd;//свет имеет влияние на цвет
+    attenuation = color * max(kd, 0.0f); //свет имеет влияние на цвет
+    // умножаем на косинус - нашу интенсивность света
 
 
     return(kd > 0);

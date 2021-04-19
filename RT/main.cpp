@@ -51,11 +51,11 @@ void create_scene()
     unsigned int  h = 1080;
     Camera        cam(eye, lookat, up, field_of_view, float(w) / float(h));
 
-    auto plane = std::make_shared<Plane>(float3(+0.0f, -1.0f, +0.0f), float3(0.0f, 1.0f, 0.0f), new IdealMirror(float3(0.4f, 0.6f, 0.6f)));
+    auto plane = std::make_shared<Plane>(float3(+0.0f, -1.0f, +0.0f), float3(0.0f, 1.0f, 0.0f), new IdealMirror(float3(0.3f, 0.3f, 0.3f)));
     auto sphere1 = std::make_shared<Sphere>(float3(-5.5f, +3.0f, -13.5f), 5, new IdealMirror(float3(0.8f, 0.3f, 0.7f)));
-    auto sphere2 = std::make_shared<Sphere>(float3(7.0f, 3.6f, +11.0f), 3.0, new Diffuse(float3(0.0f, 0.0f, 1.0f)));
-    auto parallel = std::make_shared<Parallel>(float3(-10.0f, -0.0f, +1.0f), float3(-10.0f, +5.0f, +4.0f), new IdealMirror(float3(0.0f, 0.5f, 0.5f)));
-    auto triangle1 = std::make_shared<Triangle>(float3(3.0f, 2.6f, 7.0f), float3(-2.0f, 0.0f, +2.0f), float3(-4.0f, 5.0f, +2.0f), new Diffuse(float3(0.4f, 0.3f, 0.0f)));
+    auto sphere2 = std::make_shared<Sphere>(float3(7.0f, 3.6f, +11.0f), 3.0, new Diffuse(float3(0.5f, 1.0f, 1.0f)));
+    auto parallel = std::make_shared<Parallel>(float3(-15.0f, +0.0f, 0.0f), float3(-10.0f, +7.0f, +5.0f), new IdealMirror(float3(0.8f, 0.3f, 0.7f)));
+    auto triangle1 = std::make_shared<Triangle>(float3(3.0f, 2.6f, 7.0f), float3(-2.0f, 0.0f, +2.0f), float3(-4.0f, 5.0f, +2.0f), new Diffuse(float3(45.4f, 0.3f, 0.0f)));
     auto square = std::make_shared<Square>(float3(+1.0f, +0.0f, +2.0f), float3(6.0f, +1.0f, 2.0f), float3(+5.0f, +6.0f, 2.0f), new IdealMirror(float3(1.0f, 0.5f, 0.5f)));
    
 
