@@ -53,15 +53,4 @@ public:
     float3 color;
 };
 
-class Light : public Material
-{
-public:
-    Light(const float3& a_color) : Material(), color(a_color) {};
-
-    bool Scatter(const Ray& ray_in, const SurfHit& surf, float3& attenuation, Ray& ray_out) override;
-
-    float3 color;
-};
-
-
 #endif //RT_SAMPLE_NEW_MATERIAL_H

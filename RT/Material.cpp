@@ -54,11 +54,3 @@ bool Diffuse::Scatter(const Ray& ray_in, const SurfHit& surf, float3& attenuatio
     return(kd > 0);
 }
 
-
-
-
-bool Light::Scatter(const Ray& ray_in, const SurfHit& surf, float3& attenuation, Ray& ray_out)
-{
-    attenuation = attenuation * color;
-    return true;
-};
